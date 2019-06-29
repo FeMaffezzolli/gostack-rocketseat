@@ -8,6 +8,22 @@ app.listen(3000);
 allTasks = [];
 viewCounts = 0;
 
+// ! MIDDLEWARES
+function checkIfHasId(req, res, next) {
+	if (allTasks.filter(el => el.id == req.params.id).length == 0) {
+		return res.status(400).json({ error: "Task not found!" });
+	}
+	return next();
+}
+
+app.use((req, res, next) => {
+	console.log(`Contagem de requisições: ${++viewCounts}`);
+
+	return next();
+});
+
+// ! ROUTES
+
 // Create new project
 app.post("/projects", (req, res) => {
 	const { id, title } = req.body;
@@ -23,7 +39,7 @@ app.get("/projects", (req, res) => {
 });
 
 // Delete one project by id
-app.delete("/projects/:id", (req, res) => {
+app.delete("/projects/:id", checkIfHasId, (req, res) => {
 	const { id } = req.params;
 
 	allTasks = allTasks.filter(task => task.id != id);
@@ -32,7 +48,7 @@ app.delete("/projects/:id", (req, res) => {
 });
 
 // Change project title
-app.put("/projects/:id", (req, res) => {
+app.put("/projects/:id", checkIfHasId, (req, res) => {
 	const { id } = req.params;
 	const { title } = req.body;
 
@@ -44,7 +60,7 @@ app.put("/projects/:id", (req, res) => {
 });
 
 // Add task to a great task
-app.post("/projects/:id/tasks", (req, res) => {
+app.post("/projects/:id/tasks", checkIfHasId, (req, res) => {
 	const { id } = req.params;
 	const { title } = req.body;
 
