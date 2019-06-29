@@ -1,14 +1,13 @@
 const express = require("express");
 const app = express();
 
+// Allow JSON requests
 app.use(express.json());
 
-app.listen(3000);
+let allTasks = [];
+let viewCounts = 0;
 
-allTasks = [];
-viewCounts = 0;
-
-// ! MIDDLEWARES
+// MIDDLEWARES
 function checkIfHasId(req, res, next) {
 	if (allTasks.filter(el => el.id == req.params.id).length == 0) {
 		return res.status(400).json({ error: "Task not found!" });
@@ -16,14 +15,14 @@ function checkIfHasId(req, res, next) {
 	return next();
 }
 
-app.use((req, res, next) => {
+function countRequests(req, res, next) {
 	console.log(`Contagem de requisições: ${++viewCounts}`);
-
 	return next();
-});
+}
 
-// ! ROUTES
+app.use(countRequests);
 
+// ROUTES
 // Create new project
 app.post("/projects", (req, res) => {
 	const { id, title } = req.body;
@@ -68,3 +67,6 @@ app.post("/projects/:id/tasks", checkIfHasId, (req, res) => {
 
 	res.json({ status: "Task added!" });
 });
+
+// Listen at given port
+app.listen(3000);
